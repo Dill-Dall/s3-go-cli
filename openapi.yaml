@@ -1,0 +1,117 @@
+openapi: 3.0.0
+info:
+  title: S3 Client API
+  version: 1.0.0
+servers:
+  - url: https://your_api_gateway_url.execute-api.your_region.amazonaws.com/prod
+paths:
+  /s3/list:
+    get:
+      summary: List buckets
+      operationId: listBuckets
+      responses:
+        '200':
+          description: A list of buckets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /s3/{bucket}/{key}:
+    get:
+      summary: Get object
+      operationId: getObject
+      parameters:
+        - name: bucket
+          in: path
+          description: Bucket name
+          required: true
+          schema:
+            type: string
+        - name: key
+          in: path
+          description: Object key
+          required: true
+          schema:
+            type: string
+        - name: presigned
+          in: query
+          description: Use presigned URL for get operation
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Object content or presigned URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+    put:
+      summary: Put object
+      operationId: putObject
+      parameters:
+        - name: bucket
+          in: path
+          description: Bucket name
+          required: true
+          schema:
+            type: string
+        - name: key
+          in: path
+          description: Object key
+          required: true
+          schema:
+            type: string
+        - name: presigned
+          in: query
+          description: Use presigned URL for put operation
+          required: false
+          schema:
+            type: boolean
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Object uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    delete:
+      summary: Delete object
+      operationId: deleteObject
+      parameters:
+        - name: bucket
+          in: path
+          description: Bucket name
+          required: true
+          schema:
+            type: string
+        - name: key
+          in: path
+          description: Object key
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Object deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
