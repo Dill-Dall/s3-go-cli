@@ -6,20 +6,45 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
-const (
-	apiURL = "https://your_api_gateway_url.execute-api.your_region.amazonaws.com/prod"
-	apiKey = "your_api_key"
-)
+const ()
 
 type PresignedURLResponse struct {
 	URL string `json:"url"`
 }
 
+func goDotEnvVariable(key string) string {
+
+	// load .env file
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	result := os.Getenv(key)
+
+	if len(result) == 0 {
+		log.Fatalf("%s environment variable not set. You can also add to local .env file", key)
+	}
+	return result
+}
+
+var apiKey = goDotEnvVariable("S3_PROXY_API_KEY")
+var apiURL = goDotEnvVariable("API_URL")
+
 func main() {
+	apiKey := goDotEnvVariable("S3_PROXY_API_KEY")
+	if len(apiKey) == 0 {
+		log.Fatal("S3_PROXY_API_KEY environment variable not set.  You can add to local .env file")
+	}
+
 	if len(os.Args) < 2 {
 		displayHelp()
 		os.Exit(1)
@@ -37,8 +62,6 @@ func main() {
 	presigned := flagSet.Bool("presigned", false, "Use presigned URL for get and put operations")
 
 	flagSet.Parse(os.Args[1:])
-
-	fmt.Printf("Operation: %s, Bucket: %s, Key: %s, Filename: %s, Presigned: %v\n", operation, *bucket, *key, *filename, *presigned)
 
 	switch operation {
 	case "list":
@@ -80,6 +103,9 @@ func listBuckets() {
 }
 
 func getObject(bucket, key, filename string, presigned bool) {
+	if filename == "" {
+		filename = key
+	}
 	url := apiURL + "/s3/" + bucket + "/" + key
 	if presigned {
 		url += "?presigned=true"
